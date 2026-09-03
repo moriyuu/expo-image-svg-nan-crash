@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { File, Paths } from 'expo-file-system';
 import { Image } from 'expo-image';
 
 // An SVG with no `width`/`height` attributes and no renderable content
@@ -9,14 +10,23 @@ import { Image } from 'expo-image';
 const ZERO_SIZE_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg"><defs><rect id="icon" width="16" height="16" fill="red"/></defs></svg>';
 
-const SOURCE = `data:image/svg+xml;utf8,${encodeURIComponent(ZERO_SIZE_SVG)}`;
-// If the data: URI does not load in your setup, run `npm run payload-server`
-// in this directory and use this instead:
-// const SOURCE = 'http://localhost:8000/zero-size.svg';
+const CACHE_KEY = 'expo-image-zero-size-svg';
+const SOURCE = { uri: 'https://example.invalid/zero-size.svg', cacheKey: CACHE_KEY };
 
 export default function App() {
+  const [ready, setReady] = useState(false);
   const [mode, setMode] = useState(null);
   const [loaded, setLoaded] = useState(null);
+
+  useEffect(() => {
+    const file = new File(Paths.cache, 'zero-size.svg');
+    if (file.exists) {
+      file.delete();
+    }
+    file.create();
+    file.write(ZERO_SIZE_SVG);
+    Image.writeToCacheAsync(file.uri, CACHE_KEY).then(() => setReady(true));
+  }, []);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -25,16 +35,16 @@ export default function App() {
         expo-image {require('expo-image/package.json').version} — new architecture enabled.
       </Text>
 
-      <Pressable style={styles.button} onPress={() => setMode('fill')}>
+      <Pressable style={styles.button} disabled={!ready} onPress={() => setMode('fill')}>
         <Text style={styles.buttonText}>1. Probe with contentFit="fill" (safe)</Text>
       </Pressable>
-      <Pressable style={[styles.button, styles.danger]} onPress={() => setMode('cover')}>
+      <Pressable style={[styles.button, styles.danger]} disabled={!ready} onPress={() => setMode('cover')}>
         <Text style={styles.buttonText}>2. Render with contentFit="cover" (crashes)</Text>
       </Pressable>
 
       {loaded ? (
         <Text style={styles.result}>
-          onLoad reported source size: {loaded.width} x {loaded.height}
+          onLoad: {loaded.width} x {loaded.height} (cacheType: {loaded.cacheType})
         </Text>
       ) : null}
 
@@ -44,8 +54,8 @@ export default function App() {
           style={styles.image}
           source={SOURCE}
           contentFit={mode}
-          onLoad={(event) => setLoaded(event.source)}
-          onError={(event) => setLoaded({ width: `error: ${event.error}`, height: '' })}
+          onLoad={(event) => setLoaded({ ...event.source, cacheType: event.cacheType })}
+          onError={(event) => setLoaded({ width: 'error', height: event.error })}
         />
       ) : null}
     </ScrollView>
