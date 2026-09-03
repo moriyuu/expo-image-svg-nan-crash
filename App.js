@@ -31,9 +31,7 @@ export default function App() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>expo-image: NaN in CALayer position</Text>
-      <Text style={styles.body}>
-        expo-image {require('expo-image/package.json').version} — new architecture enabled.
-      </Text>
+      <Text style={styles.body}>expo-image {require('expo-image/package.json').version}</Text>
 
       <Pressable style={styles.button} disabled={!ready} onPress={() => setMode('fill')}>
         <Text style={styles.buttonText}>1. Probe with contentFit="fill" (safe)</Text>
