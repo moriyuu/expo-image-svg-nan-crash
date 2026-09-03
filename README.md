@@ -89,8 +89,8 @@ if (imageSize.width == 0 || imageSize.height == 0) {
 }
 ```
 
-That is the only zero-size check in `SDWebImage/Core`. The cache read path
-(`SDImageCache queryCacheOperationForKey:` -> `SDWebImageManager
+That is the only zero-size check on the load-completion path. The cache read
+path (`SDImageCache queryCacheOperationForKey:` -> `SDWebImageManager
 callCompletionBlockForOperation:`) has none, so `expo-image` receives the `0 x 0`
 image with `error == nil` and `finished == true`.
 
@@ -103,9 +103,13 @@ await Image.writeToCacheAsync(fileUri, CACHE_KEY);
 <Image source={{ uri: '...', cacheKey: CACHE_KEY }} contentFit="cover" />
 ```
 
-The crash backtrace below confirms the same entry point
-(`-[SDImageCache queryCacheOperationForKey:options:context:cacheType:done:]`),
-and it matches what we see in production.
+The crash backtrace below shows that entry point
+(`-[SDImageCache queryCacheOperationForKey:options:context:cacheType:done:]`).
+
+`writeToCacheAsync` is the deterministic way to reach the unguarded cache-read
+path. The production crashes below show it is reached without it, but we do not
+have the exact sequence that puts a `0 x 0`-decoding entry into the cache
+there.
 
 ## Crash
 
@@ -153,7 +157,7 @@ private func applyContentPosition(contentSize: CGSize, containerSize: CGSize) {
 
 Independent of this repro, we hit the same crash in production in a separate app
 (Expo SDK 56, `expo-image@56.0.11`, new architecture enabled) — 29 events / 28
-users over 7 days, on remote animated image sources rather than SVG:
+users over 7 days, on remote product images rather than SVG:
 
 ```
 Fatal Exception: CALayerInvalidGeometry
