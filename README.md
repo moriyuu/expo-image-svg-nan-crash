@@ -156,7 +156,7 @@ private func applyContentPosition(contentSize: CGSize, containerSize: CGSize) {
 ## Production occurrences
 
 Independent of this repro, we hit the same crash in production in a separate app
-(Expo SDK 56, `expo-image@56.0.11`, new architecture enabled) — 29 events / 28
+(Expo SDK 56, `expo-image@56.0.11`, New Architecture) — 29 events / 28
 users over 7 days, on remote product images rather than SVG:
 
 ```
@@ -186,5 +186,5 @@ upgrading does not help.
 ## Environment
 
 - `expo` 57.0.19, `expo-image` 57.0.4, `react-native` 0.86.3
-- New architecture enabled
+- New Architecture (the only mode in Expo SDK 57 / React Native 0.86)
 - Xcode 26.6, iOS 26.5 simulator (iPhone 17 Pro)
