@@ -7,7 +7,8 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.expo.imagesvgnancrash"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,6 +20,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-image"
+    ],
+    "newArchEnabled": true
   }
 }
